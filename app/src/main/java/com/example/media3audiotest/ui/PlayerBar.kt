@@ -27,7 +27,6 @@ fun PlayerBar(
     val newProgressValue = remember { mutableStateOf(0f) }
     val useNewProgressValue = remember { mutableStateOf(false) }
 
-    Column {
         Slider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -40,14 +39,4 @@ fun PlayerBar(
             },
             onValueChangeFinished = { useNewProgressValue.value = false },
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = progressString, style = MaterialTheme.typography.bodySmall)
-            Text(text = durationString, style = MaterialTheme.typography.bodySmall)
-        }
-    }
 }

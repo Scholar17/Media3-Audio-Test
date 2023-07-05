@@ -1,6 +1,7 @@
 package com.example.media3audiotest
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -17,11 +18,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MediaServiceHandler @Inject constructor(
-    private val exoPlayer: ExoPlayer
+    private val exoPlayer: ExoPlayer,
+
 ) : Player.Listener {
 
     private val _mediaState = MutableStateFlow<MediaState>(MediaState.Initial)
     val mediaState = _mediaState.asStateFlow()
+    var mediaItemList = mutableListOf<MediaItem>()
+
 
     private var job: Job? = null
 
@@ -35,6 +39,14 @@ class MediaServiceHandler @Inject constructor(
         exoPlayer.prepare()
     }
 
+    fun addMediaItems(mediaItem: List<MediaItem>) {
+        mediaItemList.addAll(mediaItem)
+        exoPlayer.setMediaItems(mediaItem)
+        exoPlayer.playbackLooper
+        exoPlayer.prepare()
+    }
+
+
     suspend fun onPlayerEvent(playerEvent: PlayerEvent) {
         when (playerEvent) {
             PlayerEvent.Backward -> {
@@ -45,13 +57,21 @@ class MediaServiceHandler @Inject constructor(
                 exoPlayer.seekForward()
             }
 
-            PlayerEvent.PlayPause -> {
+            is PlayerEvent.PlayPause -> {
                 if (exoPlayer.isPlaying) {
-                    exoPlayer.pause()
-                    stopProgressUpdate()
+                    if (exoPlayer.currentMediaItemIndex == playerEvent.audioIndex) {
+                        exoPlayer.pause()
+                        stopProgressUpdate()
+                    } else {
+                        exoPlayer.seekTo(playerEvent.audioIndex, 0L)
+                    }
                 } else {
-                    exoPlayer.play()
+                    if (exoPlayer.currentMediaItemIndex != playerEvent.audioIndex) {
+                        Log.d("meeediaIndexH", "${exoPlayer.currentMediaItemIndex} ${playerEvent.audioIndex}")
+                        exoPlayer.seekTo(playerEvent.audioIndex, 0L)
+                    }
                     _mediaState.value = MediaState.Playing(isPlaying = true)
+                    exoPlayer.play()
                     startProgressUpdate()
                 }
             }
@@ -73,6 +93,11 @@ class MediaServiceHandler @Inject constructor(
                 MediaState.Buffering(exoPlayer.currentPosition)
             ExoPlayer.STATE_READY -> _mediaState.value =
                 MediaState.Ready(exoPlayer.duration)
+            ExoPlayer.STATE_ENDED -> {
+                _mediaState.value = MediaState.Playing(false)
+                exoPlayer.seekTo(0L)
+                exoPlayer.pause()
+            }
         }
     }
 
@@ -87,6 +112,22 @@ class MediaServiceHandler @Inject constructor(
             stopProgressUpdate()
         }
     }
+
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int
+    ) {
+        super.onPositionDiscontinuity(oldPosition, newPosition, reason)
+        if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
+            _mediaState.value = MediaState.Playing(false)
+            exoPlayer.seekTo(oldPosition.mediaItemIndex, 0)
+            exoPlayer.pause()
+            stopProgressUpdate()
+        }
+
+    }
+
 
     private suspend fun startProgressUpdate() = job.run {
         while (true) {

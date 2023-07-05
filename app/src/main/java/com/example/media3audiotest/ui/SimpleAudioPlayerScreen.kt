@@ -1,7 +1,7 @@
 package com.example.media3audiotest.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,31 +44,59 @@ fun SimpleAudioPlayerScreen(
                 colors = TopAppBarDefaults.smallTopAppBarColors(Color.Gray)
             )
         },
-        content = {paddingValues ->
+        content = { paddingValues ->
             Box(modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)){
-                when (state.value) {
-                    UIState.Initial -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .size(
-                                    30.dp,
-                                )
-                                .align(Alignment.Center)
-                        )
+                .padding(paddingValues)) {
+            when (state.value) {
+                UIState.Initial -> {
+
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(
+                                30.dp,
+                            )
+                            .align(Alignment.Center)
+                    )
+                }
+
+                is UIState.Ready -> {
+                    LaunchedEffect(key1 = true) {
+                        startService()
                     }
-                    is UIState.Ready -> {
-                        LaunchedEffect(key1 = true){
-                            startService()
-                        }
-                        AudioCommonPlayerView(
-                            durationString = vm.formatDuration(vm.duration),
-                            playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
-                            progressProvider = { Pair(vm.progress, vm.progressString) },
-                            onUIEvent = vm::onUiEvent,
-                            modifier = Modifier.padding(paddingValues)
-                        )
+//                        AudioCommonPlayerView(
+//                            durationString = vm.formatDuration(vm.duration),
+//                            playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+//                            progressProvider = { Pair(vm.progress, vm.progressString) },
+//                            onUIEvent = vm::onUiEvent,
+//                            modifier = Modifier.padding(paddingValues)
+//                        )
+Column(modifier = Modifier) {
+    ReceiverAudioItem(
+        senderName = "TZO",
+        onUIEvent = vm::onUiEvent,
+        durationString = vm.formatDuration(duration = vm.duration),
+        audioProgressString = vm.onGoingProgressString,
+        modifier = Modifier,
+        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+        progressProvider = {
+            Pair(vm.progress, vm.progressString)
+        },
+        currentMediaIndex = vm.currentMediaIndex
+    )
+    SenderAudioItem(
+        senderName = "TZO",
+        onUIEvent = vm::onUiEvent,
+        durationString = vm.formatDuration(duration = vm.duration),
+        audioProgressString = vm.onGoingProgressString,
+        modifier = Modifier,
+        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+        progressProvider = {
+            Pair(vm.progress, vm.progressString)
+        },
+        currentMediaIndex = vm.currentMediaIndex
+    )
+}
                     }
                 }
             }
