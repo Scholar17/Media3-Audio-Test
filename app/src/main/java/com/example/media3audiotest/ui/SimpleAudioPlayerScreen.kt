@@ -62,7 +62,7 @@ fun SimpleAudioPlayerScreen(
                         currentMediaIndex = vm.currentMediaIndex,
                         isLoading = vm.isLoading,
                         durationList = vm.durationList,
-                        isReady = vm.isReady
+                        isReady = vm.isReady,
                     )
                     SenderAudioItem(
                         senderName = "TZO",
@@ -77,7 +77,7 @@ fun SimpleAudioPlayerScreen(
                         currentMediaIndex = vm.currentMediaIndex,
                         isLoading = vm.isLoading,
                         durationList = vm.durationList,
-                        isReady = vm.isReady
+                        isReady = vm.isReady,
                     )
                 }
             }

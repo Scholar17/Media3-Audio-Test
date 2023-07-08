@@ -72,7 +72,7 @@ fun ReceiverAudioItem(
                     audioProgressString = if (currentMediaIndex == 1 && isReady) audioProgressString else durationList[1],
                     audioIndex = 0,
                     isReady = if (currentMediaIndex == 0) isReady else true,
-                    isLoading = if (currentMediaIndex == 0) isLoading else false
+                    isLoading = if (currentMediaIndex == 0) isLoading else false,
                 )
             }
             Text(
@@ -106,6 +106,6 @@ fun ReveiverAudioItemPrev() {
         currentMediaIndex = 0,
         isLoading = true,
         durationList = listOf("00:00", "01:00"),
-        isReady = true
+        isReady = true,
     )
 }

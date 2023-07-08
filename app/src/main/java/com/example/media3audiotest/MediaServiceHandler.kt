@@ -62,7 +62,11 @@ class MediaServiceHandler @Inject constructor(
                         exoPlayer.pause()
                         stopProgressUpdate()
                     } else {
+                        exoPlayer.pause()
+                        stopProgressUpdate()
                         exoPlayer.seekTo(playerEvent.audioIndex, 0L)
+                        exoPlayer.play()
+                        startProgressUpdate()
                     }
                 } else {
                     if (exoPlayer.currentMediaItemIndex != playerEvent.audioIndex) {
@@ -88,6 +92,8 @@ class MediaServiceHandler @Inject constructor(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         super.onMediaItemTransition(mediaItem, reason)
+        Log.d("addddingmediaitem", "${mediaItem?.mediaId}")
+
 //        _mediaState.value = MediaState.Loading(true)
     }
 

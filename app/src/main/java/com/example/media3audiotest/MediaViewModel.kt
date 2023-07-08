@@ -156,7 +156,7 @@ class MediaViewModel @Inject constructor(
     private fun loadData(urls: List<String>) {
         val mediaItems: MutableList<MediaItem> = mutableListOf()
         for (element in urls) {
-            mediaItems.add(MediaItem.Builder().setUri(element).build())
+            mediaItems.add(MediaItem.Builder().setUri(element).setMediaId(urls.indexOf(element).toString()).build())
         }
         mediaServiceHandler.addMediaItems(mediaItem = mediaItems)
     }

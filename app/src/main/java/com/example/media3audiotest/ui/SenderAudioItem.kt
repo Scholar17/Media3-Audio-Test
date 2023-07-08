@@ -32,7 +32,7 @@ fun SenderAudioItem(
     currentMediaIndex: Int,
     isLoading: Boolean,
     durationList: List<String>,
-    isReady: Boolean
+    isReady: Boolean,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -76,7 +76,7 @@ fun SenderAudioItem(
                     },
                     audioIndex = 1,
                     isReady = if (currentMediaIndex == 1) isReady else true,
-                    isLoading = if (currentMediaIndex == 1) isLoading else false
+                    isLoading = if (currentMediaIndex == 1) isLoading else false,
                 )
             }
             Text(
@@ -106,6 +106,6 @@ fun SenderAudioItemPrev() {
         currentMediaIndex = 1,
         isLoading = true,
         durationList = listOf("00:00", "01:00"),
-        isReady = true
+        isReady = true,
     )
 }

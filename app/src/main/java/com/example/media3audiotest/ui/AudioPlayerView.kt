@@ -44,7 +44,7 @@ fun AudioPlayerView(
     modifier: Modifier = Modifier,
     audioIndex: Int,
     isReady: Boolean,
-    isLoading: Boolean
+    isLoading: Boolean,
 ) {
 
     val (progress, progressString) = progressProvider()
@@ -129,6 +129,6 @@ fun AudioPlayerViewPrev() {
         modifier = Modifier,
         audioIndex = 1,
         isReady = true,
-        isLoading = false
+        isLoading = false,
     )
 }
