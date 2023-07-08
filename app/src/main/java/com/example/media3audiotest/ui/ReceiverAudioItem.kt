@@ -1,6 +1,5 @@
 package com.example.media3audiotest.ui
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,8 +30,10 @@ fun ReceiverAudioItem(
     audioProgressString: String,
     currentMediaIndex: Int,
     @DrawableRes playResourceProvider: Int,
-    progressProvider: () -> Pair<Float, String>
-
+    progressProvider: () -> Pair<Float, String>,
+    isLoading: Boolean,
+    isReady: Boolean,
+    durationList: List<String>,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -60,21 +61,25 @@ fun ReceiverAudioItem(
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                    AudioPlayerView(
-                        isSender = false,
-                        durationString = durationString,
-                        playResourceProvider = if(currentMediaIndex == 0) playResourceProvider else R.drawable.ic_play,
-                        onUIEvent = onUIEvent,
-                        progressProvider = if(currentMediaIndex == 0) progressProvider else {{Pair(0f, "00:00")}},
-                        audioProgressString = audioProgressString,
-                        audioIndex = 0
-                    )
+                AudioPlayerView(
+                    isSender = false,
+                    durationString = durationString,
+                    playResourceProvider = if (currentMediaIndex == 0) playResourceProvider else R.drawable.ic_play,
+                    onUIEvent = onUIEvent,
+                    progressProvider = if (currentMediaIndex == 0) progressProvider else {
+                        { Pair(0f, "00:00") }
+                    },
+                    audioProgressString = if (currentMediaIndex == 1 && isReady) audioProgressString else durationList[1],
+                    audioIndex = 0,
+                    isReady = if (currentMediaIndex == 0) isReady else true,
+                    isLoading = if (currentMediaIndex == 0) isLoading else false
+                )
             }
             Text(
                 modifier = modifier.padding(
                     top = 4.dp, bottom = 16.dp
                 ),
-                text = if(currentMediaIndex == 0) audioProgressString else durationString,
+                text = if (currentMediaIndex == 0 && isReady) audioProgressString else durationList[0],
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -90,12 +95,17 @@ fun VerticalSpacerSmall() {
 @Preview
 @Composable
 fun ReveiverAudioItemPrev() {
-    ReceiverAudioItem(modifier = Modifier,
+    ReceiverAudioItem(
+        modifier = Modifier,
         senderName = "TZO",
         onUIEvent = {},
         durationString = "10:54",
         audioProgressString = "10:00",
         playResourceProvider = R.drawable.ic_play,
         progressProvider = { Pair(0.5f, "10:55") },
-    currentMediaIndex = 0)
+        currentMediaIndex = 0,
+        isLoading = true,
+        durationList = listOf("00:00", "01:00"),
+        isReady = true
+    )
 }

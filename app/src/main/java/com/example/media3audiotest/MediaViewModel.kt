@@ -1,13 +1,14 @@
 package com.example.media3audiotest
 
+import android.provider.MediaStore.Audio.Media
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
+import androidx.media3.common.MediaItem
 import com.example.media3audiotest.ui.PlayerEvent
 import com.example.media3audiotest.ui.UIState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import androidx.media3.common.MediaItem
 
 @HiltViewModel
 class MediaViewModel @Inject constructor(
@@ -24,17 +24,20 @@ class MediaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     @OptIn(SavedStateHandleSaveableApi::class)
-    var runText = mutableListOf<Long>(3220L, 372715L)
+    var durationList = mutableListOf<String>("00:03", "06:12")
     var duration by savedStateHandle.saveable { mutableStateOf(0L) }
     var progress by savedStateHandle.saveable { mutableStateOf(0f) }
     var currentMediaIndex by savedStateHandle.saveable { mutableStateOf(0) }
     var onGoingProgressString by savedStateHandle.saveable { mutableStateOf("00:00") }
     var progressString by savedStateHandle.saveable { mutableStateOf("00:00") }
     var isPlaying by savedStateHandle.saveable { mutableStateOf(false) }
+    var isReady by savedStateHandle.saveable { mutableStateOf(false) }
+    var isLoading by savedStateHandle.saveable { mutableStateOf(false) }
+    var isStartPlay by savedStateHandle.saveable { mutableStateOf(false) }
 
     private val _uiState = MutableStateFlow<UIState>(UIState.Initial)
     val uiState = _uiState.asStateFlow()
-    private var mediaItem = androidx.media3.common.MediaItem.Builder()
+    private var mediaItem = MediaItem.Builder()
 
 
     init {
@@ -43,39 +46,57 @@ class MediaViewModel @Inject constructor(
             mediaServiceHandler.mediaState.collect { mediaState ->
                 when (mediaState) {
                     is MediaState.Buffering -> {
+                        isReady = false
+                        _uiState.value = UIState.Buffering
                         calculateProgressValue(mediaState.progress)
                     }
 
                     MediaState.Initial -> {
+                        isReady = false
                         _uiState.value = UIState.Initial
                     }
 
                     is MediaState.Playing -> {
                         isPlaying = mediaState.isPlaying
+                        isReady = true
                     }
 
                     is MediaState.Progress -> {
-                        calculateProgressValue(mediaState.progress)
+                            calculateProgressValue(mediaState.progress)
                     }
 
                     is MediaState.Ready -> {
+                        isReady = true
                         duration = mediaState.duration
                         Log.d("duration", "$duration")
                         onGoingProgressString = formatDuration(duration = duration)
                         _uiState.value = UIState.Ready
                     }
+
+                    is MediaState.Loading -> {
+                        isReady = !mediaState.isLoading
+                        isLoading = mediaState.isLoading
+                    }
+
+                    is MediaState.StartPlay -> {
+                        isStartPlay = mediaState.isStartPlay
+                        Log.d("isStartPlay", "$isStartPlay")
+                    }
                 }
             }
         }
-
     }
 
     private fun addMediaItems() {
         val urls = mutableListOf<String>()
-        urls.add(0, "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3")
+        urls.add(
+            0,
+            "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3"
+        )
         urls.add(1, "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
         loadData(urls)
     }
+
     fun onUiEvent(playerEvent: PlayerEvent) = viewModelScope.launch {
         when (playerEvent) {
             PlayerEvent.Backward -> {
@@ -86,14 +107,14 @@ class MediaViewModel @Inject constructor(
                 mediaServiceHandler.onPlayerEvent(PlayerEvent.Forward)
             }
 
-
             PlayerEvent.Stop -> {
                 mediaServiceHandler.onPlayerEvent(PlayerEvent.Stop)
             }
 
             is PlayerEvent.PlayPause -> {
-                currentMediaIndex = playerEvent.audioIndex
                 Log.d("meeediaIndex", "$currentMediaIndex")
+                isReady = false
+                currentMediaIndex = playerEvent.audioIndex
                 mediaServiceHandler.onPlayerEvent(PlayerEvent.PlayPause(audioIndex = playerEvent.audioIndex))
             }
 
@@ -105,8 +126,8 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    fun formatOnGoingDuration(duration: Long, currentProgress: Long): String {
-        val calculateValue = runText[currentMediaIndex] - currentProgress
+    private fun formatOnGoingDuration(duration: Long, currentProgress: Long): String {
+        val calculateValue = duration - currentProgress
         val minutes = TimeUnit.MINUTES.convert(calculateValue, TimeUnit.MILLISECONDS)
         val seconds = (TimeUnit.SECONDS.convert(
             calculateValue,
@@ -133,11 +154,16 @@ class MediaViewModel @Inject constructor(
 
 
     private fun loadData(urls: List<String>) {
-        val mediaItems : MutableList<MediaItem> = mutableListOf()
+        val mediaItems: MutableList<MediaItem> = mutableListOf()
         for (element in urls) {
             mediaItems.add(MediaItem.Builder().setUri(element).build())
         }
         mediaServiceHandler.addMediaItems(mediaItem = mediaItems)
+    }
+
+    private fun loadData(url: String) {
+        mediaItem.setUri(url).build()
+        mediaServiceHandler.addMediaItem(mediaItem = mediaItem.build())
     }
 }
 

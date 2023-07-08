@@ -6,4 +6,6 @@ sealed class MediaState {
     data class Progress(val progress: Long) : MediaState()
     data class Buffering(val progress: Long) : MediaState()
     data class Playing(val isPlaying: Boolean) : MediaState()
+    data class Loading(val isLoading: Boolean) : MediaState()
+    data class StartPlay(val isStartPlay: Boolean) : MediaState()
 }

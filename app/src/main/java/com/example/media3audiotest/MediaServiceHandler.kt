@@ -42,7 +42,6 @@ class MediaServiceHandler @Inject constructor(
     fun addMediaItems(mediaItem: List<MediaItem>) {
         mediaItemList.addAll(mediaItem)
         exoPlayer.setMediaItems(mediaItem)
-        exoPlayer.playbackLooper
         exoPlayer.prepare()
     }
 
@@ -67,12 +66,13 @@ class MediaServiceHandler @Inject constructor(
                     }
                 } else {
                     if (exoPlayer.currentMediaItemIndex != playerEvent.audioIndex) {
-                        Log.d("meeediaIndexH", "${exoPlayer.currentMediaItemIndex} ${playerEvent.audioIndex}")
+                        exoPlayer.seekToDefaultPosition()
                         exoPlayer.seekTo(playerEvent.audioIndex, 0L)
                     }
-                    _mediaState.value = MediaState.Playing(isPlaying = true)
+                    exoPlayer.playWhenReady
                     exoPlayer.play()
                     startProgressUpdate()
+                    _mediaState.value = MediaState.Playing(isPlaying = true)
                 }
             }
 
@@ -84,6 +84,11 @@ class MediaServiceHandler @Inject constructor(
                  exoPlayer.seekTo((exoPlayer.duration * playerEvent.newProgress).toLong())
             }
         }
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        super.onMediaItemTransition(mediaItem, reason)
+//        _mediaState.value = MediaState.Loading(true)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -101,17 +106,28 @@ class MediaServiceHandler @Inject constructor(
         }
     }
 
+    override fun onIsLoadingChanged(isLoading: Boolean) {
+        super.onIsLoadingChanged(isLoading)
+        if (isLoading) {
+            _mediaState.value = MediaState.Loading(true)
+        } else {
+            _mediaState.value = MediaState.Loading(false)
+        }
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         _mediaState.value = MediaState.Playing(isPlaying = isPlaying)
         if (isPlaying) {
             GlobalScope.launch(Dispatchers.Main) {
-                startProgressUpdate()
+                    startProgressUpdate()
             }
         } else {
             stopProgressUpdate()
         }
     }
+
+
 
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
@@ -121,18 +137,19 @@ class MediaServiceHandler @Inject constructor(
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
         if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
             _mediaState.value = MediaState.Playing(false)
-            exoPlayer.seekTo(oldPosition.mediaItemIndex, 0)
+            exoPlayer.seekTo(oldPosition.mediaItemIndex, 0L)
             exoPlayer.pause()
             stopProgressUpdate()
         }
-
     }
+
+
 
 
     private suspend fun startProgressUpdate() = job.run {
         while (true) {
             delay(500L)
-            _mediaState.value = MediaState.Progress(exoPlayer.currentPosition)
+                _mediaState.value = MediaState.Progress(exoPlayer.currentPosition)
         }
     }
 

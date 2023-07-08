@@ -3,12 +3,16 @@ package com.example.media3audiotest.ui
 import android.widget.SeekBar
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +43,8 @@ fun AudioPlayerView(
     onUIEvent: (PlayerEvent) -> Unit,
     modifier: Modifier = Modifier,
     audioIndex: Int,
+    isReady: Boolean,
+    isLoading: Boolean
 ) {
 
     val (progress, progressString) = progressProvider()
@@ -48,21 +54,47 @@ fun AudioPlayerView(
         modifier.background(Color.Transparent),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            modifier = modifier
-                .size(80.dp)
-                .align(Alignment.CenterVertically),
-            onClick = {onUIEvent(PlayerEvent.PlayPause(audioIndex))},
-            content = {
-                Icon(
-                    painter = painterResource(id = playResourceProvider),
-                    contentDescription = "pause button",
+
+        Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+
+            if (!isReady) {
+                Box(modifier.size(50.dp).align(Alignment.Center)) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.error,
+                        strokeWidth = 1.dp,
+                    )
+                }
+            } else
+            {
+                IconButton(
+                    modifier = modifier
+                        .size(50.dp),
+                    onClick = {onUIEvent(PlayerEvent.PlayPause(audioIndex))},
+                    content = {
+                        Icon(
+                            painter = painterResource(id = playResourceProvider),
+                            contentDescription = "pause button",
+                            modifier = Modifier
+                                .size(24.dp),
+                            tint = if (isSender) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                )
+                CircularProgressIndicator(
+                    progress = progress,
                     modifier = Modifier
-                        .size(24.dp),
-                    tint = if (isSender) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        .height(50.dp)
+                        .width(50.dp),
+                    color = MaterialTheme.colorScheme.error,
+                    strokeWidth = 1.dp,
                 )
             }
-        )
+
+
+        }
         PlayerBar(
             progress = progress,
             durationString = durationString,
@@ -76,6 +108,7 @@ fun AudioPlayerView(
 //            else MaterialTheme.colorScheme.onSurface
 //        )
     }
+
 }
 
 @Composable
@@ -94,6 +127,8 @@ fun AudioPlayerViewPrev() {
         progressProvider = {Pair(0.1f, "12:06")},
         onUIEvent = {},
         modifier = Modifier,
-        audioIndex = 1
+        audioIndex = 1,
+        isReady = true,
+        isLoading = false
     )
 }

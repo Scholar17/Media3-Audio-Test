@@ -48,56 +48,37 @@ fun SimpleAudioPlayerScreen(
             Box(modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)) {
-            when (state.value) {
-                UIState.Initial -> {
-
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(
-                                30.dp,
-                            )
-                            .align(Alignment.Center)
+                Column(modifier = Modifier) {
+                    ReceiverAudioItem(
+                        senderName = "TZO",
+                        onUIEvent = vm::onUiEvent,
+                        durationString = vm.formatDuration(duration = vm.duration),
+                        audioProgressString = vm.onGoingProgressString,
+                        modifier = Modifier,
+                        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+                        progressProvider = {
+                            Pair(vm.progress, vm.progressString)
+                        },
+                        currentMediaIndex = vm.currentMediaIndex,
+                        isLoading = vm.isLoading,
+                        durationList = vm.durationList,
+                        isReady = vm.isReady
                     )
-                }
-
-                is UIState.Ready -> {
-                    LaunchedEffect(key1 = true) {
-                        startService()
-                    }
-//                        AudioCommonPlayerView(
-//                            durationString = vm.formatDuration(vm.duration),
-//                            playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
-//                            progressProvider = { Pair(vm.progress, vm.progressString) },
-//                            onUIEvent = vm::onUiEvent,
-//                            modifier = Modifier.padding(paddingValues)
-//                        )
-Column(modifier = Modifier) {
-    ReceiverAudioItem(
-        senderName = "TZO",
-        onUIEvent = vm::onUiEvent,
-        durationString = vm.formatDuration(duration = vm.duration),
-        audioProgressString = vm.onGoingProgressString,
-        modifier = Modifier,
-        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
-        progressProvider = {
-            Pair(vm.progress, vm.progressString)
-        },
-        currentMediaIndex = vm.currentMediaIndex
-    )
-    SenderAudioItem(
-        senderName = "TZO",
-        onUIEvent = vm::onUiEvent,
-        durationString = vm.formatDuration(duration = vm.duration),
-        audioProgressString = vm.onGoingProgressString,
-        modifier = Modifier,
-        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
-        progressProvider = {
-            Pair(vm.progress, vm.progressString)
-        },
-        currentMediaIndex = vm.currentMediaIndex
-    )
-}
-                    }
+                    SenderAudioItem(
+                        senderName = "TZO",
+                        onUIEvent = vm::onUiEvent,
+                        durationString = vm.formatDuration(duration = vm.duration),
+                        audioProgressString = vm.onGoingProgressString,
+                        modifier = Modifier,
+                        playResourceProvider = if (vm.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+                        progressProvider = {
+                            Pair(vm.progress, vm.progressString)
+                        },
+                        currentMediaIndex = vm.currentMediaIndex,
+                        isLoading = vm.isLoading,
+                        durationList = vm.durationList,
+                        isReady = vm.isReady
+                    )
                 }
             }
         })
