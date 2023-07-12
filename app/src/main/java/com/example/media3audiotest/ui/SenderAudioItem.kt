@@ -27,7 +27,7 @@ fun SenderAudioItem(
     onUIEvent: (PlayerEvent) -> Unit,
     durationString: String,
     audioProgressString: String,
-    @DrawableRes playResourceProvider: Int,
+    playResourceProvider: Int,
     progressProvider: () -> Pair<Float, String>,
     currentMediaIndex: Int,
     isLoading: Boolean,

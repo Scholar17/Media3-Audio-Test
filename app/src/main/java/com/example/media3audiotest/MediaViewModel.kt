@@ -14,6 +14,7 @@ import com.example.media3audiotest.ui.UIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -59,10 +60,11 @@ class MediaViewModel @Inject constructor(
                     is MediaState.Playing -> {
                         isPlaying = mediaState.isPlaying
                         isReady = true
+                        Log.d("isPlaying", "$isPlaying")
                     }
 
                     is MediaState.Progress -> {
-                            calculateProgressValue(mediaState.progress)
+                        calculateProgressValue(mediaState.progress)
                     }
 
                     is MediaState.Ready -> {
@@ -78,12 +80,20 @@ class MediaViewModel @Inject constructor(
                         isLoading = mediaState.isLoading
                     }
 
-                    is MediaState.StartPlay -> {
-                        isStartPlay = mediaState.isStartPlay
-                        Log.d("isStartPlay", "$isStartPlay")
-                    }
                 }
             }
+        }
+    }
+
+    fun playPlayer() {
+        viewModelScope.launch {
+            mediaServiceHandler.playPlayer()
+        }
+    }
+
+    fun pausePlayer() {
+        viewModelScope.launch {
+            mediaServiceHandler.pausePlayer()
         }
     }
 

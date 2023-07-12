@@ -1,8 +1,6 @@
 package com.example.media3audiotest
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -20,7 +18,7 @@ import javax.inject.Inject
 class MediaServiceHandler @Inject constructor(
     private val exoPlayer: ExoPlayer,
 
-) : Player.Listener {
+    ) : Player.Listener {
 
     private val _mediaState = MutableStateFlow<MediaState>(MediaState.Initial)
     val mediaState = _mediaState.asStateFlow()
@@ -34,6 +32,7 @@ class MediaServiceHandler @Inject constructor(
         job = Job()
     }
 
+
     fun addMediaItem(mediaItem: MediaItem) {
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
@@ -45,6 +44,15 @@ class MediaServiceHandler @Inject constructor(
         exoPlayer.prepare()
     }
 
+    fun pausePlayer() {
+        exoPlayer.pause()
+        stopProgressUpdate()
+    }
+
+    suspend fun playPlayer() {
+        exoPlayer.play()
+        startProgressUpdate()
+    }
 
     suspend fun onPlayerEvent(playerEvent: PlayerEvent) {
         when (playerEvent) {
@@ -85,25 +93,25 @@ class MediaServiceHandler @Inject constructor(
             }
 
             is PlayerEvent.UpdateProgress -> {
-                 exoPlayer.seekTo((exoPlayer.duration * playerEvent.newProgress).toLong())
+                exoPlayer.seekTo((exoPlayer.duration * playerEvent.newProgress).toLong())
             }
         }
     }
 
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        super.onMediaItemTransition(mediaItem, reason)
-        Log.d("addddingmediaitem", "${mediaItem?.mediaId}")
-
-//        _mediaState.value = MediaState.Loading(true)
-    }
 
     @SuppressLint("SwitchIntDef")
     override fun onPlaybackStateChanged(playbackState: Int) {
         when (playbackState) {
-            ExoPlayer.STATE_BUFFERING -> _mediaState.value =
-                MediaState.Buffering(exoPlayer.currentPosition)
-            ExoPlayer.STATE_READY -> _mediaState.value =
-                MediaState.Ready(exoPlayer.duration)
+            ExoPlayer.STATE_BUFFERING -> {
+                _mediaState.value =
+                    MediaState.Buffering(exoPlayer.currentPosition)
+            }
+
+            ExoPlayer.STATE_READY -> {
+                _mediaState.value =
+                    MediaState.Ready(exoPlayer.duration)
+            }
+
             ExoPlayer.STATE_ENDED -> {
                 _mediaState.value = MediaState.Playing(false)
                 exoPlayer.seekTo(0L)
@@ -111,6 +119,7 @@ class MediaServiceHandler @Inject constructor(
             }
         }
     }
+
 
     override fun onIsLoadingChanged(isLoading: Boolean) {
         super.onIsLoadingChanged(isLoading)
@@ -126,13 +135,12 @@ class MediaServiceHandler @Inject constructor(
         _mediaState.value = MediaState.Playing(isPlaying = isPlaying)
         if (isPlaying) {
             GlobalScope.launch(Dispatchers.Main) {
-                    startProgressUpdate()
+                startProgressUpdate()
             }
         } else {
             stopProgressUpdate()
         }
     }
-
 
 
     override fun onPositionDiscontinuity(
@@ -150,18 +158,16 @@ class MediaServiceHandler @Inject constructor(
     }
 
 
-
-
     private suspend fun startProgressUpdate() = job.run {
         while (true) {
             delay(500L)
-                _mediaState.value = MediaState.Progress(exoPlayer.currentPosition)
+            _mediaState.value = MediaState.Progress(exoPlayer.currentPosition)
         }
     }
 
     private fun stopProgressUpdate() {
-        job?.cancel()
         _mediaState.value = MediaState.Playing(false)
+        job?.cancel()
     }
 
 
