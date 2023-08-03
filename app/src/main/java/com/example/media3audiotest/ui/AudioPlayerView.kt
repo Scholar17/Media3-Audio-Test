@@ -42,7 +42,7 @@ fun AudioPlayerView(
     progressProvider: () -> Pair<Float, String>,
     onUIEvent: (PlayerEvent) -> Unit,
     modifier: Modifier = Modifier,
-    audioIndex: Int,
+    audioUrl: String,
     isReady: Boolean,
     isLoading: Boolean,
 ) {
@@ -67,12 +67,11 @@ fun AudioPlayerView(
                         strokeWidth = 1.dp,
                     )
                 }
-            } else
-            {
+            } else {
                 IconButton(
                     modifier = modifier
                         .size(50.dp),
-                    onClick = {onUIEvent(PlayerEvent.PlayPause(audioIndex))},
+                    onClick = { onUIEvent(PlayerEvent.PlayPause(audioUrl = audioUrl)) },
                     content = {
                         Icon(
                             painter = painterResource(id = playResourceProvider),
@@ -120,14 +119,14 @@ fun HorizontalSpacerBase() {
 @Composable
 fun AudioPlayerViewPrev() {
     AudioPlayerView(
-      isSender = false,
+        isSender = false,
         durationString = "00:21",
         audioProgressString = "00:10",
         playResourceProvider = R.drawable.ic_play,
-        progressProvider = {Pair(0.1f, "12:06")},
+        progressProvider = { Pair(0.1f, "12:06") },
         onUIEvent = {},
         modifier = Modifier,
-        audioIndex = 1,
+        audioUrl = "",
         isReady = true,
         isLoading = false,
     )

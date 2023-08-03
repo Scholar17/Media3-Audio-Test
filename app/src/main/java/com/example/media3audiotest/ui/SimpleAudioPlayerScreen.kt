@@ -103,7 +103,7 @@ fun SimpleAudioPlayerScreen(
                         progressProvider = {
                             Pair(vm.progress, vm.progressString)
                         },
-                        currentMediaIndex = vm.currentMediaIndex,
+                        currentMediaUrl = vm.currentMediaUrl,
                         isLoading = vm.isLoading,
                         durationList = vm.durationList,
                         isReady = vm.isReady,
@@ -118,7 +118,7 @@ fun SimpleAudioPlayerScreen(
                         progressProvider = {
                             Pair(vm.progress, vm.progressString)
                         },
-                        currentMediaIndex = vm.currentMediaIndex,
+                        currentMediaUrl = vm.currentMediaUrl,
                         isLoading = vm.isLoading,
                         durationList = vm.durationList,
                         isReady = vm.isReady,

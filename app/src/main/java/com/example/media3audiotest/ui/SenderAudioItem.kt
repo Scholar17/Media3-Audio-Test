@@ -29,12 +29,13 @@ fun SenderAudioItem(
     audioProgressString: String,
     playResourceProvider: Int,
     progressProvider: () -> Pair<Float, String>,
-    currentMediaIndex: Int,
+    currentMediaUrl: String,
     isLoading: Boolean,
     durationList: List<String>,
     isReady: Boolean,
 ) {
     val scope = rememberCoroutineScope()
+    val url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
 
     Column(
         modifier = modifier
@@ -68,15 +69,15 @@ fun SenderAudioItem(
                 AudioPlayerView(
                     isSender = false,
                     durationString = durationString,
-                    audioProgressString = if (currentMediaIndex == 1 && isReady) audioProgressString else durationList[1],
-                    playResourceProvider = if (currentMediaIndex == 1) playResourceProvider else R.drawable.ic_play,
+                    audioProgressString = if (currentMediaUrl == url && isReady) audioProgressString else durationList[1],
+                    playResourceProvider = if (currentMediaUrl == url) playResourceProvider else R.drawable.ic_play,
                     onUIEvent = onUIEvent,
-                    progressProvider = if (currentMediaIndex == 1) progressProvider else {
+                    progressProvider = if (currentMediaUrl == url) progressProvider else {
                         { Pair(0f, "00:00") }
                     },
-                    audioIndex = 1,
-                    isReady = if (currentMediaIndex == 1) isReady else true,
-                    isLoading = if (currentMediaIndex == 1) isLoading else false,
+                    audioUrl = url,
+                    isReady = if (currentMediaUrl == url) isReady else true,
+                    isLoading = if (currentMediaUrl == url) isLoading else false,
                 )
             }
             Text(
@@ -84,7 +85,7 @@ fun SenderAudioItem(
                     top = 4.dp,
                     bottom = 16.dp
                 ),
-                text = if (currentMediaIndex == 1 && isReady) audioProgressString else durationList[1],
+                text = if (currentMediaUrl == url && isReady) audioProgressString else durationList[1],
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -103,7 +104,7 @@ fun SenderAudioItemPrev() {
         audioProgressString = "10:54",
         playResourceProvider = R.drawable.ic_play,
         progressProvider = { Pair(0.5f, "10:55") },
-        currentMediaIndex = 1,
+        currentMediaUrl = "",
         isLoading = true,
         durationList = listOf("00:00", "01:00"),
         isReady = true,

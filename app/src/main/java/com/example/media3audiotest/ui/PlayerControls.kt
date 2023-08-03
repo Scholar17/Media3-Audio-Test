@@ -34,7 +34,7 @@ fun PlayerControls(
             painter = painterResource(id = playResourceProvider),
             contentDescription = "play or pause",
             modifier = Modifier
-                .clickable(onClick = { onUIEvent(PlayerEvent.PlayPause(audioIndex = 1)) })
+                .clickable(onClick = { onUIEvent(PlayerEvent.PlayPause(audioUrl="")) })
                 .padding(12.dp)
                 .size(24.dp)
         )
