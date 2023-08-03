@@ -91,13 +91,7 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    fun pausePlayer() {
-        viewModelScope.launch {
-            mediaServiceHandler.pausePlayer()
-        }
-    }
-
-    private fun addMediaItems() {
+        private fun addMediaItems() {
         val urls = mutableListOf<String>()
         urls.add(
             0,
@@ -106,6 +100,13 @@ class MediaViewModel @Inject constructor(
         urls.add(1, "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
         loadData(urls)
     }
+        
+    fun pausePlayer() {
+        viewModelScope.launch {
+            mediaServiceHandler.pausePlayer()
+        }
+    }
+
 
     fun onUiEvent(playerEvent: PlayerEvent) = viewModelScope.launch {
         when (playerEvent) {
