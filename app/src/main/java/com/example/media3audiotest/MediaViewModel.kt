@@ -19,22 +19,21 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+@OptIn(SavedStateHandleSaveableApi::class)
 @HiltViewModel
 class MediaViewModel @Inject constructor(
     private val mediaServiceHandler: MediaServiceHandler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    @OptIn(SavedStateHandleSaveableApi::class)
     var durationList = mutableListOf<String>("00:03", "06:12")
     var duration by savedStateHandle.saveable { mutableStateOf(0L) }
     var progress by savedStateHandle.saveable { mutableStateOf(0f) }
-    var currentMediaIndex by savedStateHandle.saveable { mutableStateOf(0) }
     var onGoingProgressString by savedStateHandle.saveable { mutableStateOf("00:00") }
     var progressString by savedStateHandle.saveable { mutableStateOf("00:00") }
     var isPlaying by savedStateHandle.saveable { mutableStateOf(false) }
     var isReady by savedStateHandle.saveable { mutableStateOf(false) }
     var isLoading by savedStateHandle.saveable { mutableStateOf(false) }
-    var isStartPlay by savedStateHandle.saveable { mutableStateOf(false) }
+    var currentMediaUrl by savedStateHandle.saveable { mutableStateOf("") }
 
     private val _uiState = MutableStateFlow<UIState>(UIState.Initial)
     val uiState = _uiState.asStateFlow()
@@ -43,7 +42,6 @@ class MediaViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            addMediaItems()
             mediaServiceHandler.mediaState.collect { mediaState ->
                 when (mediaState) {
                     is MediaState.Buffering -> {
@@ -97,16 +95,6 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    private fun addMediaItems() {
-        val urls = mutableListOf<String>()
-        urls.add(
-            0,
-            "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3"
-        )
-        urls.add(1, "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
-        loadData(urls)
-    }
-
     fun onUiEvent(playerEvent: PlayerEvent) = viewModelScope.launch {
         when (playerEvent) {
             PlayerEvent.Backward -> {
@@ -122,17 +110,18 @@ class MediaViewModel @Inject constructor(
             }
 
             is PlayerEvent.PlayPause -> {
-                Log.d("meeediaIndex", "$currentMediaIndex")
                 isReady = false
-                currentMediaIndex = playerEvent.audioIndex
-                mediaServiceHandler.onPlayerEvent(PlayerEvent.PlayPause(audioIndex = playerEvent.audioIndex))
+                if (currentMediaUrl != playerEvent.audioUrl) {
+                    currentMediaUrl = playerEvent.audioUrl
+                    loadData(playerEvent.audioUrl)
+                }
+                mediaServiceHandler.onPlayerEvent(PlayerEvent.PlayPause(audioUrl = playerEvent.audioUrl))
             }
 
             is PlayerEvent.UpdateProgress -> {
                 progress = playerEvent.newProgress
                 mediaServiceHandler.onPlayerEvent(PlayerEvent.UpdateProgress(progress))
             }
-
         }
     }
 
@@ -172,6 +161,7 @@ class MediaViewModel @Inject constructor(
     }
 
     private fun loadData(url: String) {
+        mediaServiceHandler.removeMediaItem()
         mediaItem.setUri(url).build()
         mediaServiceHandler.addMediaItem(mediaItem = mediaItem.build())
     }

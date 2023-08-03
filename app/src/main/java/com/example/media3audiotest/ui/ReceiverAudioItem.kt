@@ -28,7 +28,7 @@ fun ReceiverAudioItem(
     onUIEvent: (PlayerEvent) -> Unit,
     durationString: String,
     audioProgressString: String,
-    currentMediaIndex: Int,
+    currentMediaUrl: String,
     @DrawableRes playResourceProvider: Int,
     progressProvider: () -> Pair<Float, String>,
     isLoading: Boolean,
@@ -36,6 +36,7 @@ fun ReceiverAudioItem(
     durationList: List<String>,
 ) {
     val scope = rememberCoroutineScope()
+    val url = "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3"
 
     Column(
         modifier = modifier
@@ -64,22 +65,22 @@ fun ReceiverAudioItem(
                 AudioPlayerView(
                     isSender = false,
                     durationString = durationString,
-                    playResourceProvider = if (currentMediaIndex == 0) playResourceProvider else R.drawable.ic_play,
+                    playResourceProvider = if (currentMediaUrl == url) playResourceProvider else R.drawable.ic_play,
                     onUIEvent = onUIEvent,
-                    progressProvider = if (currentMediaIndex == 0) progressProvider else {
+                    progressProvider = if (currentMediaUrl == url) progressProvider else {
                         { Pair(0f, "00:00") }
                     },
-                    audioProgressString = if (currentMediaIndex == 1 && isReady) audioProgressString else durationList[1],
-                    audioIndex = 0,
-                    isReady = if (currentMediaIndex == 0) isReady else true,
-                    isLoading = if (currentMediaIndex == 0) isLoading else false,
+                    audioProgressString = if (currentMediaUrl == url && isReady) audioProgressString else durationList[1],
+                    audioUrl = "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3",
+                    isReady = if (currentMediaUrl == url) isReady else true,
+                    isLoading = if (currentMediaUrl == url) isLoading else false,
                 )
             }
             Text(
                 modifier = modifier.padding(
                     top = 4.dp, bottom = 16.dp
                 ),
-                text = if (currentMediaIndex == 0 && isReady) audioProgressString else durationList[0],
+                text = if (currentMediaUrl == url && isReady) audioProgressString else durationList[0],
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -103,7 +104,7 @@ fun ReveiverAudioItemPrev() {
         audioProgressString = "10:00",
         playResourceProvider = R.drawable.ic_play,
         progressProvider = { Pair(0.5f, "10:55") },
-        currentMediaIndex = 0,
+        currentMediaUrl = "",
         isLoading = true,
         durationList = listOf("00:00", "01:00"),
         isReady = true,

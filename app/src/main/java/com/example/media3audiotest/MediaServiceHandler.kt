@@ -1,6 +1,7 @@
 package com.example.media3audiotest
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -23,7 +24,7 @@ class MediaServiceHandler @Inject constructor(
     private val _mediaState = MutableStateFlow<MediaState>(MediaState.Initial)
     val mediaState = _mediaState.asStateFlow()
     var mediaItemList = mutableListOf<MediaItem>()
-
+    private var mediaItem = MediaItem.Builder()
 
     private var job: Job? = null
 
@@ -32,10 +33,18 @@ class MediaServiceHandler @Inject constructor(
         job = Job()
     }
 
-
+    fun removeMediaItem() {
+        exoPlayer.removeMediaItem(0)
+    }
     fun addMediaItem(mediaItem: MediaItem) {
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
+    }
+
+    private fun addMediaUrl(url: String) {
+        mediaItem.setUri(url).build()
+        mediaItem.setMediaId(url)
+        addMediaItem(mediaItem = mediaItem.build())
     }
 
     fun addMediaItems(mediaItem: List<MediaItem>) {
@@ -66,22 +75,9 @@ class MediaServiceHandler @Inject constructor(
 
             is PlayerEvent.PlayPause -> {
                 if (exoPlayer.isPlaying) {
-                    if (exoPlayer.currentMediaItemIndex == playerEvent.audioIndex) {
                         exoPlayer.pause()
                         stopProgressUpdate()
-                    } else {
-                        exoPlayer.pause()
-                        stopProgressUpdate()
-                        exoPlayer.seekTo(playerEvent.audioIndex, 0L)
-                        exoPlayer.play()
-                        startProgressUpdate()
-                    }
                 } else {
-                    if (exoPlayer.currentMediaItemIndex != playerEvent.audioIndex) {
-                        exoPlayer.seekToDefaultPosition()
-                        exoPlayer.seekTo(playerEvent.audioIndex, 0L)
-                    }
-                    exoPlayer.playWhenReady
                     exoPlayer.play()
                     startProgressUpdate()
                     _mediaState.value = MediaState.Playing(isPlaying = true)
@@ -97,7 +93,6 @@ class MediaServiceHandler @Inject constructor(
             }
         }
     }
-
 
     @SuppressLint("SwitchIntDef")
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -120,7 +115,6 @@ class MediaServiceHandler @Inject constructor(
         }
     }
 
-
     override fun onIsLoadingChanged(isLoading: Boolean) {
         super.onIsLoadingChanged(isLoading)
         if (isLoading) {
@@ -142,7 +136,6 @@ class MediaServiceHandler @Inject constructor(
         }
     }
 
-
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,
@@ -157,7 +150,6 @@ class MediaServiceHandler @Inject constructor(
         }
     }
 
-
     private suspend fun startProgressUpdate() = job.run {
         while (true) {
             delay(500L)
@@ -169,6 +161,5 @@ class MediaServiceHandler @Inject constructor(
         _mediaState.value = MediaState.Playing(false)
         job?.cancel()
     }
-
 
 }
