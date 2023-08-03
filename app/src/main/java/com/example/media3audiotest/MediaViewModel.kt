@@ -89,6 +89,16 @@ class MediaViewModel @Inject constructor(
         }
     }
 
+        private fun addMediaItems() {
+        val urls = mutableListOf<String>()
+        urls.add(
+            0,
+            "https://galaxyshopbucket.s3.ap-southeast-1.amazonaws.com/CHAT_MEDIA_FILES/10022da67fd6-daa6-4ff9-bc42-f99228aaef38.mp3"
+        )
+        urls.add(1, "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+        loadData(urls)
+    }
+        
     fun pausePlayer() {
         viewModelScope.launch {
             mediaServiceHandler.pausePlayer()
