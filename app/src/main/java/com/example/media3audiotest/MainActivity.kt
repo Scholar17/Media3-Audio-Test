@@ -20,8 +20,7 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: MediaViewModel by viewModels()
     private var isServiceRunning = false
-
-
+    
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +43,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    Media3AudioTestTheme {
+        Greeting("Android")
+    }
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -53,12 +57,4 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Media3AudioTestTheme {
-        Greeting("Android")
-    }
 }
